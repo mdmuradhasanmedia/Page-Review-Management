@@ -1,0 +1,33 @@
+package user;
+
+import java.io.*;
+import java.sql.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+
+public class DeletePageServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user_id") == null) {
+            response.sendRedirect("user/login.jsp");
+            return;
+        }
+
+        int userId = (Integer) session.getAttribute("user_id");
+        int pageId = Integer.parseInt(request.getParameter("pageId"));
+
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "root", "password")) {
+            String sql = "DELETE FROM pages WHERE id = ? AND user_id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, pageId);
+            stmt.setInt(2, userId);
+            stmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        response.sendRedirect("mypages");
+    }
+}
